@@ -2,6 +2,7 @@
 title: "qPCR Analyzer"
 output: html_document
 date: "2023-04-29"
+author: "MJB"
 ---
 
 ```{r setup, include=FALSE, echo=FALSE}
@@ -18,8 +19,9 @@ library(xlsx, warn.conflicts = FALSE)
 library(dplyr, warn.conflicts = FALSE)
 library(ggplot2)
 library(ggridges)
-library(ridgeline)
+#library(ridgeline)
 library(reticulate)
+library(shiny)
  #following Functions are masked: filter, lag, intersect, setdiff, setequal, union (NEEDS TO BE UPDATED!!!)
 ```
 
@@ -27,8 +29,8 @@ library(reticulate)
 ##insert an interactive way to enter the paths!
 #enter your data paths:
 
-template_path = '/Users/Marius Beck/OneDrive/Desktop/BA-Projekte/Hevin/qPCR-Template.xlsx' #before you run the script, enter your datapath here
-melt_path = '/Users/Marius Beck/OneDrive/Desktop/BA-Projekte/Hevin/Neuer Ordner/qCHS1PrimerConcOptim_chartmelt2.xlsx'
+template_path = '/Users/beckm/OneDrive/Desktop/BA-Projekte/Hevin/qPCR-Template.xlsx' #before you run the script, enter your datapath here
+melt_path = '/Users/beckm/OneDrive/Desktop/BA-Projekte/Hevin/Neuer Ordner/qCHS1PrimerConcOptim_chartmelt2.xlsx'
 
 #dataimport
 meltcomp <- read.xlsx(melt_path, 1)
@@ -45,6 +47,8 @@ meltraw <- slice(meltcomp, lstart:lend)
 #set row and columnnames
 #names(meltraw) <- meltraw[1,]
 #meltraw <- meltraw[-1,]
+meltraw <- data.frame(meltraw, row.names = 1)
+meltraw <- data.frame(t(meltraw))
 meltraw <- data.frame(meltraw, row.names = 1)
 
 ```
