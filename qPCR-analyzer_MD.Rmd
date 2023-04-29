@@ -1,0 +1,50 @@
+---
+title: "qPCR Analyzer"
+output: html_document
+date: "2023-04-29"
+---
+
+```{r setup, include=FALSE, echo=FALSE}
+#invisible setup
+knitr::opts_chunk$set(echo = TRUE)
+#packages needed for this script
+packages <- c('xlsx', 'dplyr', 'ggplot2', 'ggridges', 'reticulate') #, 'remotes'
+  
+#install all packages that are not already installed
+install.packages(setdiff(packages, rownames(installed.packages())))
+
+#load R packages
+library(xlsx, warn.conflicts = FALSE)
+library(dplyr, warn.conflicts = FALSE)
+library(ggplot2)
+library(ggridges)
+library(ridgeline)
+library(reticulate)
+ #following Functions are masked: filter, lag, intersect, setdiff, setequal, union (NEEDS TO BE UPDATED!!!)
+```
+
+```{r data location}
+##insert an interactive way to enter the paths!
+#enter your data paths:
+
+template_path = '/Users/Marius Beck/OneDrive/Desktop/BA-Projekte/Hevin/qPCR-Template.xlsx' #before you run the script, enter your datapath here
+melt_path = '/Users/Marius Beck/OneDrive/Desktop/BA-Projekte/Hevin/Neuer Ordner/qCHS1PrimerConcOptim_chartmelt2.xlsx'
+
+#dataimport
+meltcomp <- read.xlsx(melt_path, 1)
+
+```
+
+```{r data prep}
+#prepare melting data for meltcurve plot
+#first and last line of data
+lstart <- which(meltcomp == 'Derivation')
+lend <- which(meltcomp == 'G12')
+#extract data
+meltraw <- slice(meltcomp, lstart:lend)
+#set row and columnnames
+#names(meltraw) <- meltraw[1,]
+#meltraw <- meltraw[-1,]
+meltraw <- data.frame(meltraw, row.names = 1)
+
+```
