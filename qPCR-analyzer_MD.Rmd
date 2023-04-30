@@ -39,16 +39,33 @@ meltcomp <- read.xlsx(melt_path, 1)
 
 ```{r data prep}
 #prepare melting data for meltcurve plot
+
 #first and last line of data
 lstart <- which(meltcomp == 'Derivation')
 lend <- which(meltcomp == 'G12')
+
 #extract data
 meltraw <- slice(meltcomp, lstart:lend)
+
 #set row and columnnames
-#names(meltraw) <- meltraw[1,]
-#meltraw <- meltraw[-1,]
 meltraw <- data.frame(meltraw, row.names = 1)
 meltraw <- data.frame(t(meltraw))
 meltraw <- data.frame(meltraw, row.names = 1)
+rnmr <- row.names(meltraw)
+```
+
+
+```{r melt curve correlation}
+umelt <- read.csv(umeltpath) #umeltpath definieren
+umelt <- cbind.data.frame(umelt$uMelt, umelt$All.Rights.Reserved) #genauere Column ids
+names(umelt) <- umelt[1,]
+umelt <- umelt[-1,]
+umelt <- apply(umelt, 2, function(x) as.numeric(as.character(x)))
+#code schreiben, für umelt auflösung
+#umelt <- umelt %>% slice(which(row_number() %% 5 == 1))
+#umelt <- head(umelt, - 10) ##eventuell besserer weg nach dem maximum in meltraw zu suchen und diesen wert zu benutzen
+
+#outouts von cor() und cor.test() anschauen was die aussagen und gegebenenfalls besseren test suchen.
+
 
 ```
