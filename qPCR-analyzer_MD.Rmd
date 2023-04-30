@@ -69,7 +69,7 @@ umelt <- umelt %>% slice(which(row_number() %% 2 == 1))
 umelt <- head(umelt, - 11) ##eventuell besserer weg nach dem maximum in meltraw zu suchen und diesen wert zu benutzen
 ```
 
-```{r melt curve correlation}
+```{r melt curve correlation, echo=FALSE}
 k <- 1
 coeff <- c()
 #correlation analysis of meltcurve against umelt data
@@ -78,10 +78,20 @@ for (i in colnames(meltraw)) {
   coeff <- c(coeff, a)
   k == k + 1
 }
-print(coeff)
+#print(coeff)
 #coeff output filtern für threshold
 
 #outouts von cor() und cor.test() anschauen was die aussagen und gegebenenfalls besseren test suchen.
 
 
 ```
+
+
+
+
+
+
+
+
+
+
