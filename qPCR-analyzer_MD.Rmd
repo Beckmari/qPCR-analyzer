@@ -31,6 +31,7 @@ library(shiny)
 
 template_path = '/Users/beckm/OneDrive/Desktop/BA-Projekte/Hevin/qPCR-Template.xlsx' #before you run the script, enter your datapath here
 melt_path = '/Users/beckm/OneDrive/Desktop/BA-Projekte/Hevin/Neuer Ordner/qCHS1PrimerConcOptim_chartmelt2.xlsx'
+umeltpath <- '/Users/beckm/OneDrive/Desktop/myCSV(1).csv'
 
 #dataimport
 meltcomp <- read.xlsx(melt_path, 1)
@@ -52,18 +53,33 @@ meltraw <- data.frame(meltraw, row.names = 1)
 meltraw <- data.frame(t(meltraw))
 meltraw <- data.frame(meltraw, row.names = 1)
 rnmr <- row.names(meltraw)
-```
+meltraw <- apply(meltraw, 2, function(x) as.numeric(as.character(x)))
+meltraw <- data.frame(meltraw)
+meltraw <- meltraw %>% slice(which(row_number() %% 5 == 1))
 
-
-```{r melt curve correlation}
+#read and prepare umelt data
 umelt <- read.csv(umeltpath) #umeltpath definieren
-umelt <- cbind.data.frame(umelt$uMelt, umelt$All.Rights.Reserved) #genauere Column ids
+umelt <- cbind.data.frame(umelt$uMelt, umelt$All.Rights.Reserved) 
 names(umelt) <- umelt[1,]
 umelt <- umelt[-1,]
 umelt <- apply(umelt, 2, function(x) as.numeric(as.character(x)))
 #code schreiben, für umelt auflösung
-#umelt <- umelt %>% slice(which(row_number() %% 5 == 1))
-#umelt <- head(umelt, - 10) ##eventuell besserer weg nach dem maximum in meltraw zu suchen und diesen wert zu benutzen
+umelt <- data.frame(umelt)
+umelt <- umelt %>% slice(which(row_number() %% 2 == 1))
+umelt <- head(umelt, - 11) ##eventuell besserer weg nach dem maximum in meltraw zu suchen und diesen wert zu benutzen
+```
+
+```{r melt curve correlation}
+k <- 1
+coeff <- c()
+#correlation analysis of meltcurve against umelt data
+for (i in colnames(meltraw)) {
+  a <- cor(umelt$X..dF.dT, meltraw[[i]])
+  coeff <- c(coeff, a)
+  k == k + 1
+}
+print(coeff)
+#coeff output filtern für threshold
 
 #outouts von cor() und cor.test() anschauen was die aussagen und gegebenenfalls besseren test suchen.
 
