@@ -2,6 +2,7 @@
 title: "qPCR Analyzer"
 output: html_document
 date: "2023-04-29"
+version: 0.1
 author: "MJB"
 ---
 
@@ -23,6 +24,8 @@ library(ggridges)
 library(reticulate)
 library(shiny)
  #following Functions are masked: filter, lag, intersect, setdiff, setequal, union (NEEDS TO BE UPDATED!!!)
+
+source(/Users/beckm/Documents/qPCR-analyzer/Script_library.R)
 ```
 
 ```{r data location}
