@@ -25,7 +25,7 @@ library(reticulate)
 library(shiny)
  #following Functions are masked: filter, lag, intersect, setdiff, setequal, union (NEEDS TO BE UPDATED!!!)
 
-source(/Users/beckm/Documents/qPCR-analyzer/Script_library.R)
+source('/Users/beckm/Documents/qPCR-analyzer/Script_library.R')
 ```
 
 ```{r data location}
