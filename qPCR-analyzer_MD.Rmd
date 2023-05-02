@@ -26,42 +26,88 @@ library(shiny)
  #following Functions are masked: filter, lag, intersect, setdiff, setequal, union (NEEDS TO BE UPDATED!!!)
 
 source('/Users/beckm/Documents/qPCR-analyzer/Script_library.R')
+rm(packages)
 ```
 
 ```{r data location}
 ##insert an interactive way to enter the paths!
 #enter your data paths:
 
-template_path = '/Users/beckm/OneDrive/Desktop/BA-Projekte/Hevin/qPCR-Template.xlsx' #before you run the script, enter your datapath here
-melt_path = '/Users/beckm/OneDrive/Desktop/BA-Projekte/Hevin/Neuer Ordner/qCHS1PrimerConcOptim_chartmelt2.xlsx'
+template_path <- '/Users/beckm/OneDrive/Desktop/BA-Projekte/Hevin/qPCR-Template.xlsx' #before you run the script, enter your datapath here
+melt_path <- '/Users/beckm/OneDrive/Desktop/BA-Projekte/Hevin/Neuer Ordner/qCHS1PrimerConcOptim_chartmelt2.xlsx'
 umeltpath <- '/Users/beckm/OneDrive/Desktop/myCSV(1).csv'
 
-#dataimport
-meltcomp <- read.xlsx(melt_path, 1)
 
 ```
+
+```{r template prep}
+#96-well empty template
+plate <- c()
+for(i in 1:8) {
+  for(k in 1:12){
+    result <- switch (i,
+      "1" = paste('A', k, sep = ''),
+      "2" = paste('B', k, sep = ''),
+      "3" = paste('c', k, sep = ''),
+      "4" = paste('D', k, sep = ''),
+      "5" = paste('E', k, sep = ''),
+      "6" = paste('F', k, sep = ''),
+      "7" = paste('G', k, sep = ''),
+      "8" = paste('H', k, sep = '')
+    )
+    
+    plate <- c(plate, result)
+  }
+}
+rm(result, i, k)
+
+
+#experimental template import
+template <- read.xlsx(template_path, 1, header = FALSE)
+rm(template_path)
+template <- as.vector(t(template))
+template <- as.vector(t(template))
+temp_id <- unique(template)
+temp_id <- temp_id[!is.na(temp_id)]
+
+```
+
+
 
 ```{r data prep}
 #prepare melting data for meltcurve plot
 
+#dataimport
+meltcomp <- read.xlsx(melt_path, 1)
+rm(melt_path)
 #first and last line of data
 lstart <- which(meltcomp == 'Derivation')
 lend <- which(meltcomp == 'G12')
 
 #extract data
 meltraw <- slice(meltcomp, lstart:lend)
-
+rm(lstart, lend, meltcomp)
 #set row and columnnames
 meltraw <- data.frame(meltraw, row.names = 1)
 meltraw <- data.frame(t(meltraw))
 meltraw <- data.frame(meltraw, row.names = 1)
-rnmr <- row.names(meltraw)
 meltraw <- apply(meltraw, 2, function(x) as.numeric(as.character(x)))
 meltraw <- data.frame(meltraw)
 meltraw <- meltraw %>% slice(which(row_number() %% 5 == 1))
+#reduce templates to experimental size
+numcol <- ncol(meltraw)
+template <- template[1:numcol]
+plate <- plate[1:numcol]
+rm(numcol)
+for(i in temp_id){
+  x <- which(template %in% i) #returns indices of replicates if propper named in template
+  plate[x] #something in this direction finds standard plate indices to group replicates
+}
+rm(i, x)
 
 #read and prepare umelt data
 umelt <- read.csv(umeltpath) #umeltpath definieren
+rm(umeltpath)
 umelt <- cbind.data.frame(umelt$uMelt, umelt$All.Rights.Reserved) 
 names(umelt) <- umelt[1,]
 umelt <- umelt[-1,]
@@ -73,14 +119,15 @@ umelt <- head(umelt, - 11) ##eventuell besserer weg nach dem maximum in meltraw 
 ```
 
 ```{r melt curve correlation, echo=FALSE}
-k <- 1
+
 coeff <- c()
 #correlation analysis of meltcurve against umelt data
 for (i in colnames(meltraw)) {
   a <- cor(umelt$X..dF.dT, meltraw[[i]])
   coeff <- c(coeff, a)
-  k == k + 1
+  
 }
+rm(a, i)
 #print(coeff)
 #coeff output filtern für threshold
 
