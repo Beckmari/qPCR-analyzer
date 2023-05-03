@@ -33,7 +33,7 @@ rm(packages)
 ##insert an interactive way to enter the paths!
 #enter your data paths:
 
-template_path <- '/Users/beckm/OneDrive/Desktop/BA-Projekte/Hevin/qPCR-Template.xlsx' #before you run the script, enter your datapath here
+template_path <- 'qPCR-Template.xlsx' #before you run the script, enter your datapath here
 melt_path <- '/Users/beckm/OneDrive/Desktop/BA-Projekte/Hevin/Neuer Ordner/qCHS1PrimerConcOptim_chartmelt2.xlsx'
 umeltpath <- '/Users/beckm/OneDrive/Desktop/myCSV(1).csv'
 
@@ -66,7 +66,7 @@ rm(result, i, k)
 template <- read.xlsx(template_path, 1, header = FALSE)
 rm(template_path)
 template <- as.vector(t(template))
-template <- as.vector(t(template))
+#template <- as.vector(t(template))
 temp_id <- unique(template)
 temp_id <- temp_id[!is.na(temp_id)]
 
@@ -80,13 +80,15 @@ temp_id <- temp_id[!is.na(temp_id)]
 #dataimport
 meltcomp <- read.xlsx(melt_path, 1)
 rm(melt_path)
+
 #first and last line of data
 lstart <- which(meltcomp == 'Derivation')
-lend <- which(meltcomp == 'G12')
+lend <- lstart + 97
 
 #extract data
 meltraw <- slice(meltcomp, lstart:lend)
 rm(lstart, lend, meltcomp)
+
 #set row and columnnames
 meltraw <- data.frame(meltraw, row.names = 1)
 meltraw <- data.frame(t(meltraw))
@@ -94,6 +96,7 @@ meltraw <- data.frame(meltraw, row.names = 1)
 meltraw <- apply(meltraw, 2, function(x) as.numeric(as.character(x)))
 meltraw <- data.frame(meltraw)
 meltraw <- meltraw %>% slice(which(row_number() %% 5 == 1))
+
 #reduce templates to experimental size
 numcol <- ncol(meltraw)
 template <- template[1:numcol]
