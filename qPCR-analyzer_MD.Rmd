@@ -34,10 +34,8 @@ rm(packages)
 #enter your data paths:
 
 template_path <- 'qPCR-Template.xlsx' #before you run the script, enter your datapath here
-melt_path <- '/Users/Marius Beck/OneDrive/Desktop/BA-Projekte/Hevin/Neuer Ordner/qCHS1PrimerConcOptim_chartmelt2.xlsx'
+melt_path <- 'C:/Users/Marius Beck/OneDrive/Desktop/BA-Projekte/Hevin/230504 P= P4 Primereffizienzen/chartmelt.xlsx'
 umeltpath <- '/Users/Marius Beck/OneDrive/Desktop/myCSV(1).csv'
-melt_path <- '/Users/beckm/OneDrive/Desktop/BA-Projekte/Hevin/Neuer Ordner/qCHS1PrimerConcOptim_chartmelt2.xlsx'
-umeltpath <- '/Users/beckm/OneDrive/Desktop/myCSV(1).csv'
 
 
 ```
@@ -74,7 +72,7 @@ temp_id <- temp_id[!is.na(temp_id)]
 ```
 
 ```{r data prep}
-#prepare melting data for meltcurve plot
+#prepare melting data for meltcurve analysis
 
 #dataimport
 meltcomp <- read.xlsx(melt_path, 1)
