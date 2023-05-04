@@ -25,7 +25,7 @@ library(reticulate)
 library(shiny)
  #following Functions are masked: filter, lag, intersect, setdiff, setequal, union (NEEDS TO BE UPDATED!!!)
 
-source('/Users/beckm/Documents/qPCR-analyzer/Script_library.R')
+source('Script_library.R')
 rm(packages)
 ```
 
@@ -33,14 +33,14 @@ rm(packages)
 ##insert an interactive way to enter the paths!
 #enter your data paths:
 
-template_path <- '/Users/beckm/OneDrive/Desktop/BA-Projekte/Hevin/qPCR-Template.xlsx' #before you run the script, enter your datapath here
-melt_path <- '/Users/beckm/OneDrive/Desktop/BA-Projekte/Hevin/Neuer Ordner/qCHS1PrimerConcOptim_chartmelt2.xlsx'
-umeltpath <- '/Users/beckm/OneDrive/Desktop/myCSV(1).csv'
+template_path <- 'qPCR-Template.xlsx' #before you run the script, enter your datapath here
+melt_path <- '/Users/Marius Beck/OneDrive/Desktop/BA-Projekte/Hevin/Neuer Ordner/qCHS1PrimerConcOptim_chartmelt2.xlsx'
+umeltpath <- '/Users/Marius Beck/OneDrive/Desktop/myCSV(1).csv'
 
 
 ```
 
-```{r template prep}
+```{r template prep, echo=FALSE}
 #96-well empty template
 plate <- c()
 for(i in 1:8) {
@@ -61,7 +61,6 @@ for(i in 1:8) {
 }
 rm(result, i, k)
 
-
 #experimental template import
 template <- read.xlsx(template_path, 1, header = FALSE)
 rm(template_path)
@@ -72,21 +71,21 @@ temp_id <- temp_id[!is.na(temp_id)]
 
 ```
 
-
-
 ```{r data prep}
 #prepare melting data for meltcurve plot
 
 #dataimport
 meltcomp <- read.xlsx(melt_path, 1)
 rm(melt_path)
+
 #first and last line of data
 lstart <- which(meltcomp == 'Derivation')
-lend <- which(meltcomp == 'G12')
+lend <- lstart+97
 
 #extract data
 meltraw <- slice(meltcomp, lstart:lend)
 rm(lstart, lend, meltcomp)
+
 #set row and columnnames
 meltraw <- data.frame(meltraw, row.names = 1)
 meltraw <- data.frame(t(meltraw))
@@ -94,14 +93,16 @@ meltraw <- data.frame(meltraw, row.names = 1)
 meltraw <- apply(meltraw, 2, function(x) as.numeric(as.character(x)))
 meltraw <- data.frame(meltraw)
 meltraw <- meltraw %>% slice(which(row_number() %% 5 == 1))
+
 #reduce templates to experimental size
 numcol <- ncol(meltraw)
 template <- template[1:numcol]
 plate <- plate[1:numcol]
 rm(numcol)
+k <- c()
 for(i in temp_id){
   x <- which(template %in% i) #returns indices of replicates if propper named in template
-  plate[x] #something in this direction finds standard plate indices to group replicates
+  k <- c(k, plate[x]) #something in this direction finds standard plate indices to group replicates
 }
 rm(i, x)
 
@@ -112,6 +113,7 @@ umelt <- cbind.data.frame(umelt$uMelt, umelt$All.Rights.Reserved)
 names(umelt) <- umelt[1,]
 umelt <- umelt[-1,]
 umelt <- apply(umelt, 2, function(x) as.numeric(as.character(x)))
+
 #code schreiben, für umelt auflösung
 umelt <- data.frame(umelt)
 umelt <- umelt %>% slice(which(row_number() %% 2 == 1))
