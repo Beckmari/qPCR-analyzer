@@ -36,6 +36,8 @@ rm(packages)
 template_path <- 'qPCR-Template.xlsx' #before you run the script, enter your datapath here
 melt_path <- '/Users/Marius Beck/OneDrive/Desktop/BA-Projekte/Hevin/Neuer Ordner/qCHS1PrimerConcOptim_chartmelt2.xlsx'
 umeltpath <- '/Users/Marius Beck/OneDrive/Desktop/myCSV(1).csv'
+melt_path <- '/Users/beckm/OneDrive/Desktop/BA-Projekte/Hevin/Neuer Ordner/qCHS1PrimerConcOptim_chartmelt2.xlsx'
+umeltpath <- '/Users/beckm/OneDrive/Desktop/myCSV(1).csv'
 
 
 ```
@@ -65,7 +67,7 @@ rm(result, i, k)
 template <- read.xlsx(template_path, 1, header = FALSE)
 rm(template_path)
 template <- as.vector(t(template))
-template <- as.vector(t(template))
+#template <- as.vector(t(template))
 temp_id <- unique(template)
 temp_id <- temp_id[!is.na(temp_id)]
 
@@ -80,7 +82,7 @@ rm(melt_path)
 
 #first and last line of data
 lstart <- which(meltcomp == 'Derivation')
-lend <- lstart+97
+lend <- lstart + 97
 
 #extract data
 meltraw <- slice(meltcomp, lstart:lend)
