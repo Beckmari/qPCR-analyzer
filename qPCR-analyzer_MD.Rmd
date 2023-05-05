@@ -10,7 +10,7 @@ author: "MJB"
 #invisible setup
 knitr::opts_chunk$set(echo = TRUE)
 #packages needed for this script
-packages <- c('xlsx', 'dplyr', 'ggplot2', 'ggridges', 'reticulate') #, 'remotes'
+packages <- c('xlsx', 'readxl', 'dplyr', 'ggplot2', 'ggridges', 'reticulate') #, 'remotes'
   
 #install all packages that are not already installed
 install.packages(setdiff(packages, rownames(installed.packages())))
@@ -23,6 +23,7 @@ library(ggridges)
 #library(ridgeline)
 library(reticulate)
 library(shiny)
+library(readxl)
  #following Functions are masked: filter, lag, intersect, setdiff, setequal, union (NEEDS TO BE UPDATED!!!)
 
 source('Script_library.R')
@@ -34,8 +35,9 @@ rm(packages)
 #enter your data paths:
 
 template_path <- 'qPCR-Template.xlsx' #before you run the script, enter your datapath here
-melt_path <- 'C:/Users/Marius Beck/OneDrive/Desktop/BA-Projekte/Hevin/230504 P= P4 Primereffizienzen/chartmelt.xlsx'
-umeltpath <- '/Users/Marius Beck/OneDrive/Desktop/myCSV(1).csv'
+melt_path <- 'C:/Users/beckm/OneDrive/Desktop/BA-Projekte/Hevin/230504 P= P4 Primereffizienzen/chartmelt.xlsx'
+umeltpath <- '/Users/beckm/OneDrive/Desktop/myCSV(1).csv'
+ctpath <- '/Users/beckm/OneDrive/Desktop/BA-Projekte/Hevin/230504 P= P4 Primereffizienzen/amplictvalue.xlsx'
 
 
 ```
@@ -65,6 +67,8 @@ rm(result, i, k)
 template <- read.xlsx(template_path, 1, header = FALSE)
 rm(template_path)
 template <- as.vector(t(template))
+template <- data.frame(cbind(plate, template))
+template <- na.omit(template)
 #template <- as.vector(t(template))
 temp_id <- unique(template)
 temp_id <- temp_id[!is.na(temp_id)]
@@ -94,18 +98,6 @@ meltraw <- apply(meltraw, 2, function(x) as.numeric(as.character(x)))
 meltraw <- data.frame(meltraw)
 meltraw <- meltraw %>% slice(which(row_number() %% 5 == 1))
 
-#reduce templates to experimental size
-numcol <- ncol(meltraw)
-template <- template[1:numcol]
-plate <- plate[1:numcol]
-rm(numcol)
-k <- c()
-for(i in temp_id){
-  x <- which(template %in% i) #returns indices of replicates if propper named in template
-  k <- c(k, plate[x]) #something in this direction finds standard plate indices to group replicates
-}
-rm(i, x)
-
 #read and prepare umelt data
 umelt <- read.csv(umeltpath) #umeltpath definieren
 rm(umeltpath)
@@ -121,12 +113,15 @@ umelt <- head(umelt, - 11) ##eventuell besserer weg nach dem maximum in meltraw 
 ```
 
 ```{r melt curve correlation, echo=FALSE}
-
+#maximal experimental
 coeff <- c()
+coeff_stats <- c()
 #correlation analysis of meltcurve against umelt data
 for (i in colnames(meltraw)) {
   a <- cor(umelt$X..dF.dT, meltraw[[i]])
+  b <- cor.test(umelt$X..dF.dT, meltraw[[i]])
   coeff <- c(coeff, a)
+  coeff_stats <- c(coeff_stats, b)
   
 }
 rm(a, i)
@@ -134,9 +129,58 @@ rm(a, i)
 #coeff output filtern für threshold
 
 #outouts von cor() und cor.test() anschauen was die aussagen und gegebenenfalls besseren test suchen.
+samplecorr <- data.frame(cbind(template, coeff))
+meltcorrplot <- plot(1:84, samplecorr$coeff, main = "Experimental correlation of melting curves! DO NOT USE!!!")
+
+```
+
+
+```{r CT Analysis}
+#import CT values
+ctvalues <- read.xlsx(ctpath, 1)
+lstart <- which(ctvalues == "Well")
+lend <- lstart + 97
+ctvalues <- slice(ctvalues, lstart:lend)
+names(ctvalues) <- ctvalues[1,]
+ctvalues <- ctvalues[-1,]
+
+
 
 
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
