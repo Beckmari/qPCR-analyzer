@@ -5,13 +5,13 @@ source("dependencies.R")
 # enter unique experiment identifier
 expID <- "experimental ID"
 # enter your reference gene
-RefG <- "RpS18" 
+RefG <- "RefG" 
 # enter all your genes w/o reference gene
-genes <- list("FABP") 
+genes <- list("enter", "your", "genes/groups") 
 # enter path to prepared data in *.xlsx file
-loadPath <- "C:/Users/beckm/OneDrive/Desktop/micPCR/FABP15275/FABP15275_L1-P0.xlsx"
+loadPath <- "C:/path/to/your/data/your_data.xlsx"
 # enter path where data shall be stored
-storePath <- "C:/Users/beckm/OneDrive/Desktop/micPCR"
+storePath <- "C:/path/where/your/data/shall/be/stored"
 # if you want to show stats, set TRUE
 add_statistics <- FALSE
 
