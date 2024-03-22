@@ -27,6 +27,9 @@ if (!require("dplyr", character.only = TRUE)) {
 if (!require("PMCMRplus", character.only = TRUE)) {
   install.packages("PMCMRplus")
 }
+if (!require("DescTools", character.only = TRUE)) {
+  install.packages("DescTools")
+}
 library(ggplot2)
 library(readxl)
 library(openxlsx)
@@ -36,3 +39,4 @@ library(ggpubr)
 library(dplyr)
 library(car)
 library(PMCMRplus)
+library(DescTools)
