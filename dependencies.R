@@ -18,6 +18,15 @@ if (!require("tidyverse", character.only = TRUE)) {
 if (!require("ggpubr", character.only = TRUE)) {
   install.packages("ggpubr")
 }
+if (!require("car", character.only = TRUE)) {
+  install.packages("car")
+}
+if (!require("dplyr", character.only = TRUE)) {
+  install.packages("dplyr")
+}
+if (!require("PMCMRplus", character.only = TRUE)) {
+  install.packages("PMCMRplus")
+}
 library(ggplot2)
 library(readxl)
 library(openxlsx)
@@ -25,3 +34,5 @@ library(rstatix)
 library(tidyverse)
 library(ggpubr)
 library(dplyr)
+library(car)
+library(PMCMRplus)
