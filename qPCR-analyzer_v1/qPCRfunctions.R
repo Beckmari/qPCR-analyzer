@@ -105,13 +105,10 @@ plotPrep <- function(eff, RefG, gene, sample_values) {
   return(plotData)
 }
 
-plotData <- function(data, expID, add_statistics = FALSE) {
-  #bxp <- ggplot(data = data, aes(x = reorder(desc(Sample_Gene), desc(Gene)), y = normCt)) + 
-    geom_boxplot()
-    
-  bxp <- ggplot(data = data, aes(x = as.factor(Sample), y = normCt)) + geom_boxplot() 
+plotData <- function(dataPool, expID, add_statistics = FALSE) {
+  bxp <- ggplot(data = dataPool, aes(x = reorder(Sample_Gene, -normCt), y = normCt)) + geom_boxplot() 
   if (add_statistics == TRUE) {
-    stat.test <- qPCRstats(data)
+    stat.test <- qPCRstats(dataPool)
     stat.test <- stat.test %>% add_xy_position(x = "Sample_Gene")
     bxp + 
       stat_pvalue_manual(stat.test, hide.ns = TRUE, label = "p.adj.signif", tip.length = 0, step.increase = 0.1) +
@@ -122,30 +119,18 @@ plotData <- function(data, expID, add_statistics = FALSE) {
         x = "Sample",
         y = paste0("relative Expression of ", expID, " [normalized /", RefG, "]")
         ) + 
-      theme(
-        plot.title = element_text(hjust = 0.5, size = 20),
-        axis.text.x = element_text(angle = 45, size = 20),
-        axis.text.y = element_text(size = 20),
-        axis.title = element_text(size = 20)
-            )
+      theme(plot.title = element_text(hjust = 0.5))
   } else {
     bxp + 
       labs(
         title = expID,
         x = "Sample",
         y = paste0("relative Expression of ", expID, " [normalized /", RefG, "]")
-      ) +
-      theme(
-        plot.title = element_text(hjust = 0.5, size = 20),
-        axis.text.x = element_text(angle = 45, size = 20),
-        axis.text.y = element_text(size = 20),
-        axis.title = element_text(size = 20)
       )
   }
 }
 
 qPCRstats <- function(data) {
-  data$normCt <- data$normCt * 100000 ###########################
   shapVal <- data %>% shapiro_test(normCt)
   levVal <- data %>% levene_test(normCt ~ Sample_Gene)
   if (shapVal$p > 0.05 & levVal$p > 0.05) {

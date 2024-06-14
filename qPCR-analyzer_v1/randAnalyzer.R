@@ -3,41 +3,35 @@ source("qPCRfunctions.R")
 source("dependencies.R")
 
 # enter unique experiment identifier
-expID <- "Ctl2ProfileE"
+expID <- "experiment name"
 # enter your reference gene
 RefG <- "RpS18" 
 # enter all your genes w/o reference gene
-genes <- list("Ctl2_1323") 
+genes <- list("genes", "of", "interest") 
 # enter path to prepared data in *.xlsx file
-loadPath <- "C:/Users/Marius Beck/OneDrive/Desktop/ExpressionProfile/Ctl21323ProfileE.xlsx"
+loadPath <- "C:/path/to/data.xlsx"
 # enter path where data shall be stored
-storePath <- "C:/Users/Marius Beck/OneDrive/Desktop/ExpressionProfile"
+storePath <- "C:/path/to/store/images"
 # if you want to show stats, set TRUE
-add_statistics <- F
+add_statistics <- TRUE
 
 # enter your empirical primerefficancies in the following list separated by comma
 # if you don't know your empirical primerefficancies enter a theoretical value of 2
 efficancies <- list(
   RpS6 = 1.99, #empiric
   RpS18 = 1.93, #empiric
-  FABP15275 = 1.91, #empiric
-  FABP12473 = 2.00, #theoretic
-  FABP1310 = 2.00, #theoretic
+  FABP = 1.91, #empiric
   CHS1 = 2.00, #empiric
   Exp = 1.95, #empiric
-  Osiris18 = 2.00, #theoretic
-  Tsr = 2.00, #theoretic
-  Ctl2_1323 = 2.00, #theoretic
-  SERCA12671 = 2.049 #empiric
+  CDA5 = 2.00, #theoretic
+  CDA6 = 2.026, #empiric
+  CDA7 = 2.075, #empiric
+  CDA8 = 2.00, #theoretic
+  CDA9 = 2.00 #theoretic
 )
 
 # load data
 DataTable <- read_excel(loadPath)
-
-
-DataTable$Ct <- gsub(",", ".", DataTable$Ct)
-DataTable$Ct <- gsub("-1", NA, DataTable$Ct)
-DataTable$Ct <- as.numeric(DataTable$Ct)
 
 # prepare your data
 ValueTable <- dataPrep(DataTable, RefG, genes)
@@ -59,29 +53,14 @@ duplicates <- duplicated(dataPool$Sample) | duplicated(dataPool$Sample, fromLast
 extractedData <- dataPool[!duplicates, ]
 dataPool <- dataPool[duplicates, ]
 
-#dataPool$Sample <- factor(dataPool$Sample, levels = c("L1", "L2", "L3", "L4", "L5", "PP", "P0", "P1", "P2", "P3", "P4", "P5", "A"))
 
-# plot data sorted by primer pairs
+# plot data
 for (gene_name in genes) {
   tempPlotData <- subset(dataPool, grepl(gene_name, dataPool$Gene))
   plotData(tempPlotData, gene_name, add_statistics)
   # save plot and data
-  ggsave(paste0(gene_name, "_normalized_boxplot_Pupae.tiff"), path = storePath)
-  ggsave(paste0(gene_name, "_normalized_boxplot_Pupae.pdf"), path = storePath)
-}
-
-
-# plot data sorted by RNAi
-rnai <- unique(dataPool$Sample)
-rnai <- subset(rnai, !grepl("dsVer", rnai))
-ctrlKD <- subset(dataPool, grepl("dsVer", dataPool$Sample))
-for (kd in rnai) {
-  tempPlotData <- subset(dataPool, grepl(kd, dataPool$Sample))
-  tempPlotData <- rbind(tempPlotData, ctrlKD)
-  plotData(tempPlotData, kd, add_statistics)
-  # save plot and data
-  ggsave(paste0(kd, "_normalized_boxplotordered_wo2.tiff"), path = storePath)
-  ggsave(paste0(kd, "_normalized_boxplotordered_wo2.pdf"), path = storePath)
+  ggsave(paste0(gene_name, "_normalized_boxplot.tiff"), path = storePath)
+  ggsave(paste0(gene_name, "_normalized_boxplot.svg"), path = storePath)
 }
 
 # save data
