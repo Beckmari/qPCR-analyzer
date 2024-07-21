@@ -33,6 +33,14 @@ if (!require("DescTools", character.only = TRUE)) {
 if (!require("hrbrthemes", character.only = TRUE)) {
   install.packages("hrbrthemes")
 }
+if (!require("ggcorrplot", character.only = TRUE)) {
+  install.packages("ggcorrplot")
+}
+if (!requireNamespace("devtools")) install.packages("devtools")
+devtools::install_github("caijun/ggcorrplot2")
+if (!require("psych", character.only = TRUE)) {
+  install.packages("psych")
+}
 library(ggplot2)
 library(readxl)
 library(openxlsx)
@@ -44,3 +52,6 @@ library(car)
 library(PMCMRplus)
 library(DescTools)
 library(hrbrthemes)
+library(ggcorrplot)
+library(ggcorrplot2)
+library(psych)

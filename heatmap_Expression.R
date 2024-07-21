@@ -8,7 +8,7 @@ pDataCollect <- "C:/Users/Marius Beck/OneDrive/Desktop/ExpressionProfile/Profile
 DataCollect <- read_excel(pDataCollect)
 
 #load new data and save in Collection
-pNewData <- "C:/Users/Marius Beck/OneDrive/Desktop/ExpressionProfile/TsrProfileE_boxplot_Data.xlsx"
+pNewData <- "C:/Users/Marius Beck/OneDrive/Desktop/ExpressionProfile/Sauber 8h/SERCA12761ProfileE_8h_boxplot_Data.xlsx"
 NewData <- read_excel(pNewData)
 DataCollect <- rbind(DataCollect, NewData)
 write.xlsx(DataCollect, pDataCollect)
@@ -39,8 +39,6 @@ ggplot(data = DataCollect, aes(Sample, Gene, fill = deltaCt)) +
   #scale_fill_gradient(low="darkblue", high = "yellow") + 
   theme_ipsum()
 
-datmat2 <- as.matrix(t(datMat))
-heatmap(datmat2, Colv = NA, scale = "row")
 
 
 
@@ -52,7 +50,8 @@ heatmap(datmat2, Colv = NA, scale = "row")
 
 
 
-theme(legend.position = "bottom")theme(legend.position = "bottom")test <- c()
+
+test <- c()
 
 test <- DataCollect %>%
   group_by(Sample, Gene) %>%
@@ -66,7 +65,9 @@ datMat$Tsr <- test2$normCt[test2$Gene == "Tsr"]
 datMat$Ctl2_1323 <- test2$normCt[test2$Gene == "Ctl2_1323"]
 datMat$Osiris18 <- test2$normCt[test2$Gene == "Osiris18"]
 datMat$FABP15275 <- test2$normCt[test2$Gene == "FABP15275"]
+datMat$FABP15275_1 <- test2$normCt[test2$Gene == "FABP15275 1"]
 datMat$SERCA12671 <- test2$normCt[test2$Gene == "SERCA12671"]
+datMat$SERCA12671_1 <- test2$normCt[test2$Gene == "SERCA12671 1"]
 datMat <- as.data.frame(datMat)
 rownames(datMat) <- unique(test2$Sample)
 corr <- cor(datMat)

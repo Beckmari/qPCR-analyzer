@@ -107,14 +107,15 @@ plotPrep <- function(eff, RefG, gene, sample_values) {
 
 plotData <- function(data, expID, add_statistics = FALSE) {
   #bxp <- ggplot(data = data, aes(x = reorder(desc(Sample_Gene), desc(Gene)), y = normCt)) + 
-    geom_boxplot()
+    #geom_boxplot()
     
-  bxp <- ggplot(data = data, aes(x = as.factor(Sample), y = normCt)) + geom_boxplot() 
+  #bxp <- ggplot(data = data, aes(x = Sample, y = normCt)) + geom_boxplot() 
+  bxp <- ggplot(data = data, aes(x = Sample, y = relExp)) + geom_boxplot(outliers = F) 
   if (add_statistics == TRUE) {
     stat.test <- qPCRstats(data)
     stat.test <- stat.test %>% add_xy_position(x = "Sample_Gene")
     bxp + 
-      stat_pvalue_manual(stat.test, hide.ns = TRUE, label = "p.adj.signif", tip.length = 0, step.increase = 0.1) +
+      stat_pvalue_manual(stat.test, hide.ns = TRUE, label = "p.adj.signif", tip.length = 0, step.increase = 0.1, y.position = 1.475) +
       labs(
         title = expID,
         subtitle = get_test_label(res_aov, detailed = TRUE), 
@@ -124,10 +125,11 @@ plotData <- function(data, expID, add_statistics = FALSE) {
         ) + 
       theme(
         plot.title = element_text(hjust = 0.5, size = 20),
-        axis.text.x = element_text(angle = 45, size = 20),
+        axis.text.x = element_text(size = 20),#angle = 45, size = 20),
         axis.text.y = element_text(size = 20),
         axis.title = element_text(size = 20)
-            )
+            ) + 
+      ylim(0.65, 1.5)
   } else {
     bxp + 
       labs(
@@ -145,15 +147,25 @@ plotData <- function(data, expID, add_statistics = FALSE) {
 }
 
 qPCRstats <- function(data) {
-  data$normCt <- data$normCt * 100000 ###########################
-  shapVal <- data %>% shapiro_test(normCt)
-  levVal <- data %>% levene_test(normCt ~ Sample_Gene)
+  #data$normCt <- data$normCt * 100000 ###########################
+  data$relExp <- data$relExp * 100000 ###########################
+  #shapVal <- data %>% shapiro_test(normCt)
+  shapVal <- data %>% shapiro_test(relExp)
+  #levVal <- data %>% levene_test(normCt ~ Sample_Gene)
+  levVal <- data %>% levene_test(relExp ~ Sample_Gene)
+  #if (shapVal$p > 0.05 & levVal$p > 0.05) {
+  #  stat.test <- data %>% anova_test(normCt ~ Sample_Gene)
+  #  posthoc_res <- data %>% pairwise_t_test(normCt ~ Sample_Gene, p.adjust.method = "bonferroni")
+  #} else {
+  #  stat.test <- data %>% kruskal_test(normCt ~ Sample)
+  #  posthoc_res <- data %>% pairwise_t_test(normCt ~ Sample_Gene, p.adjust.method = "bonferroni")
+  #}
   if (shapVal$p > 0.05 & levVal$p > 0.05) {
-    stat.test <- data %>% anova_test(normCt ~ Sample_Gene)
-    posthoc_res <- data %>% pairwise_t_test(normCt ~ Sample_Gene, p.adjust.method = "bonferroni")
+    stat.test <- data %>% anova_test(relExp ~ Sample_Gene)
+    posthoc_res <- data %>% pairwise_t_test(relExp ~ Sample_Gene, p.adjust.method = "bonferroni")
   } else {
-    stat.test <- data %>% kruskal_test(normCt ~ Sample)
-    posthoc_res <- data %>% pairwise_t_test(normCt ~ Sample_Gene, p.adjust.method = "bonferroni")
+    stat.test <- data %>% kruskal_test(relExp ~ Sample)
+    posthoc_res <- data %>% pairwise_t_test(relExp ~ Sample_Gene, p.adjust.method = "bonferroni")
   }
   assign("res_aov", stat.test, envir = .GlobalEnv)
   assign("res_posthoc", posthoc_res, envir = .GlobalEnv)
