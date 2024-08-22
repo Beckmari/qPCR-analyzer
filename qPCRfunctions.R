@@ -110,12 +110,12 @@ plotData <- function(data, expID, add_statistics = FALSE) {
     #geom_boxplot()
     
   #bxp <- ggplot(data = data, aes(x = Sample, y = normCt)) + geom_boxplot() 
-  bxp <- ggplot(data = data, aes(x = Sample, y = relExp)) + geom_boxplot(outliers = F) 
+  bxp <- ggplot(data = data, aes(x = Gene, y = relExp)) + geom_boxplot() 
   if (add_statistics == TRUE) {
     stat.test <- qPCRstats(data)
     stat.test <- stat.test %>% add_xy_position(x = "Sample_Gene")
     bxp + 
-      stat_pvalue_manual(stat.test, hide.ns = TRUE, label = "p.adj.signif", tip.length = 0, step.increase = 0.1, y.position = 1.475) +
+      stat_pvalue_manual(stat.test, hide.ns = TRUE, label = "p.adj.signif", tip.length = 0, step.increase = 0.1, y.position = 0.0025) +
       labs(
         title = expID,
         subtitle = get_test_label(res_aov, detailed = TRUE), 
@@ -129,7 +129,7 @@ plotData <- function(data, expID, add_statistics = FALSE) {
         axis.text.y = element_text(size = 20),
         axis.title = element_text(size = 20)
             ) + 
-      ylim(0.65, 1.5)
+      ylim(0, 0.0025)
   } else {
     bxp + 
       labs(
@@ -139,7 +139,7 @@ plotData <- function(data, expID, add_statistics = FALSE) {
       ) +
       theme(
         plot.title = element_text(hjust = 0.5, size = 20),
-        axis.text.x = element_text(angle = 45, size = 20),
+        axis.text.x = element_text(size = 20),#angle = 45, size = 20),
         axis.text.y = element_text(size = 20),
         axis.title = element_text(size = 20)
       )
@@ -148,9 +148,11 @@ plotData <- function(data, expID, add_statistics = FALSE) {
 
 qPCRstats <- function(data) {
   #data$normCt <- data$normCt * 100000 ###########################
-  data$relExp <- data$relExp * 100000 ###########################
+  #data$relExp <- data$relExp * 100000 ###########################
   #shapVal <- data %>% shapiro_test(normCt)
   shapVal <- data %>% shapiro_test(relExp)
+  #shapVal <- c()
+  #shapVal$p <- 0.05
   #levVal <- data %>% levene_test(normCt ~ Sample_Gene)
   levVal <- data %>% levene_test(relExp ~ Sample_Gene)
   #if (shapVal$p > 0.05 & levVal$p > 0.05) {
@@ -180,12 +182,154 @@ saveData <- function(dataPool, extractedData, storePath, expID) {
 
 
 
+##### additional for relative expression
+
+#load data from *.xlsx file with possible different sheets for biological replicates
+
+load_Data <- function(loadPath) {
+  
+  DataTable <- c()
+  biol_rep <- length(excel_sheets(loadPath))
+  
+  for (sheet in 1:biol_rep) {
+    temp <- read_excel(loadPath, sheet = sheet)
+    
+    genes <- unique(temp$Gene)
+    genes <- subset(genes, !grepl(RefG, genes))
+    
+    samples <- unique(temp$Sample)
+    samples <- subset(samples, !grepl(refGroup, samples))
+    
+    temp$Cq <- gsub(",", ".", temp$Cq)
+    temp$Cq <- gsub("-1", NA, temp$Cq)
+    temp$Cq <- as.numeric(temp$Cq)
+    temp <- na.omit(temp)
+    if (biol_rep >= 2) {
+      temp <- aggregate(temp, list(temp$Sample, temp$Gene), mean)
+      temp$Sample <- temp$Group.1
+      temp$Gene <- temp$Group.2
+    }
+    DataTable <- rbind(DataTable, temp)
+  }
+  assign("genes", genes, envir = .GlobalEnv)
+  assign("biol_rep", biol_rep, envir = .GlobalEnv)
+  return(DataTable)
+  
+}
 
 
+# dataPrep and Ct calc for rel Expression
+
+rel_data_prep <- function(DataTable, RefG, genes, refGroup) {
+  
+  ValueTable <- dataPrep(DataTable, RefG, genes)
+  
+  # normalize Ct values with Primerefficancies against reference gene and calculate deltaCt
+  uni_samples <- unique(ValueTable$Sample)
+  
+  dataPool <- c()
+  tempData <- c()
+  for (sample_name in uni_samples) {
+    var_name <- paste0(sample_name, "_plot")
+    for (gene_name in genes) {
+      tempData <- plotPrep(efficancies, RefG, gene_name, ValueTable)# get(sample_name))
+      dataPool <- rbind(dataPool, tempData)
+    }
+  }
+  dataPool <- as.data.frame(dataPool)
+  # check for n < 2 in dataPool
+  duplicates <- duplicated(dataPool$Sample) | duplicated(dataPool$Sample, fromLast = TRUE)
+  extractedData <- dataPool[!duplicates, ]
+  dataPool <- dataPool[duplicates, ]
+  dataPool <- distinct(dataPool)
+  
+  tempPool <- c()
+  tempstatPoolaov <- c()
+  tempstatPoolph <- c()
+  for (gene in genes) {
+    tempgene <- subset(dataPool, grepl(gene, dataPool$Gene))
+    temp <- subset(tempgene, grepl(refGroup, tempgene$Sample))
+    temp <- 1 / median(temp$normCt)
+    tempgene$relExp <- tempgene$normCt * temp
+    #tempstat <- tempgene %>% t_test(relExp ~ Sample)
+    qPCRstats(tempgene)
+    tempstatPoolaov <- rbind(tempstatPoolaov, as.data.frame(res_aov))
+    tempstatPoolph <- rbind(tempstatPoolph,  as.data.frame(res_posthoc))
+    tempPool <- rbind(tempPool, tempgene)
+  }
+  dataPool <- distinct(tempPool)
+  
+  return(dataPool)
+}
 
 
+# rel plotter
 
-
+rel_plot <- function(dataPool, bars = "se") {
+  
+  dataPoolTest <- subset(dataPool, !grepl(refGroup, dataPool$Sample))
+  dataPoolTest <- distinct(dataPoolTest)
+  dataPoolTest$Gene <- factor(dataPoolTest$Gene, levels = level_list)
+  
+  KDeffsum <- subset(dataPool, grepl(level_list[[1]], dataPool$Gene))
+  KDeffsum <- summarySE(data=KDeffsum, measurevar="relExp", groupvars="Sample", na.rm=FALSE, conf.interval=.95)
+  
+  
+  if(biol_rep >= 2) {
+    
+    #plotData(dataPoolTest, expGroup)
+    ggplot(dataPoolTest, aes(x=Gene, y = relExp*100)) + 
+      geom_hline(aes(yintercept = 100), linetype = "dashed", linewidth = 1.2, colour = "blue")+
+      geom_boxplot(fill = "lightblue") +
+      theme_minimal() +
+      labs(
+        title = expGroup,
+        x = "Gene",
+        y = "relative Expression in %", 
+        caption = paste0("Replicates: N = 3, n = ", biol_rep, "; KD-efficancy of ", expGroup, ": ", round(diff(KDeffsum$relExp) * 100, 2), "% \u00B1 ", round(KDeffsum$sd[1]*100, 2), "%")
+      ) +
+      theme(
+        plot.title = element_text(hjust = 0.5, size = 20),
+        axis.text.x = element_text(size = 15),# angle = 45),#, size = 20),
+        axis.text.y = element_text(size = 15),
+        axis.title = element_text(size = 15),
+        plot.caption = element_text(face = "italic", size = 15, hjust = 0.5)
+      ) #+
+      #ylim(0,230)
+  } else if (biol_rep == 1) {
+    
+    dPbtw <- summarySE(data=dataPoolTest, measurevar="relExp", groupvars="Sample_Gene", na.rm=FALSE, conf.interval=.95)
+    dPbtw$Sample_Gene <- gsub(paste0(expGroup, " "), "", dPbtw$Sample_Gene)
+    dPbtw$Sample_Gene <- factor(dPbtw$Sample_Gene, levels = level_list)
+    
+    ggplot(dPbtw, aes(x=Sample_Gene, y = relExp)) + 
+      geom_hline(aes(yintercept = 1), linetype = "dashed", linewidth = 1.2, colour = "blue")+
+      geom_errorbar(aes(ymin=relExp-get(bars), ymax=relExp+get(bars)),width=.1) +
+      geom_point(size = 2) +
+      theme_minimal() +
+      labs(
+        title = expGroup,
+        x = "Gene",
+        y = "relative Expression",
+        caption = paste0("Replicates: N = 3, n = ", biol_rep, "; KD-efficancy of ", expGroup, ": ", round(diff(KDeffsum$relExp) * 100, 2), "% \u00B1 ", round(KDeffsum$sd[1]*100, 2), "%")
+      ) +
+      theme(
+        plot.title = element_text(hjust = 0.5, size = 20),
+        axis.text.x = element_text(size = 15),# angle = 45),#, size = 20),
+        axis.text.y = element_text(size = 15),
+        axis.title = element_text(size = 15),
+        plot.caption = element_text(face = "italic", size = 10, hjust = 0.5)
+      ) #+
+      #ylim(0,200)
+    
+  }
+  
+  
+  
+  
+  
+  
+}
 
 
 

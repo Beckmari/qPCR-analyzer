@@ -1,3 +1,8 @@
+# script dependencies
+
+source("primer_efficancies.R")
+
+
 # check for necassary installations and load packages
 
 if (!require("ggplot2", character.only = TRUE)) {
@@ -41,6 +46,10 @@ devtools::install_github("caijun/ggcorrplot2")
 if (!require("psych", character.only = TRUE)) {
   install.packages("psych")
 }
+if (!require("Rmisc", character.only = TRUE)) {
+  install.packages("Rmisc")
+}
+library(Rmisc)
 library(ggplot2)
 library(readxl)
 library(openxlsx)
