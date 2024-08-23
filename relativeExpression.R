@@ -7,11 +7,11 @@ expID <- "Coreg"
 # enter your reference gene
 RefG <- "RpS18" 
 #experimental group
-expGroup <- "dsFABP15275"
+expGroup <- "dsKu70"
 #Reference group
 refGroup <- "dsVer"
 # enter path to prepared data in *.xlsx file
-loadPath <- "C:/Users/Marius Beck/OneDrive/Desktop/RNAi/LSRNAi/Sammelmappe.xlsx"
+loadPath <- "C:/Users/Marius Beck/OneDrive/Desktop/RNAi/LSRNAi/Sammelmappe_extra_Rebuf.xlsx"
 # enter path where data shall be stored
 storePath <- "C:/Users/Marius Beck/OneDrive/Desktop/RNAi/LSRNAi/"
 
@@ -29,8 +29,8 @@ dataPool <- rel_data_prep(DataTable, RefG, genes, refGroup)
 level_list <- c("FABP15275", # 1st gene should always be the KnockDown!!!
                 "FABP1310",
                 "FABP12473",
+                "Reb",
                 "CHS1",
-                "Exp",
                 "Ctl2", 
                 "Tsr", 
                 "Osi18",

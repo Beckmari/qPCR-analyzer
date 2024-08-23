@@ -8,7 +8,7 @@ efficancies <- list(
   FABP12473 = 2.00, #theoretic
   FABP1310 = 2.00, #theoretic
   CHS1 = 2.00, #empiric
-  Exp = 1.95, #empiric
+  Reb = 1.95, #empiric
   Osi18 = 2.00, #theoretic
   Tsr = 2.00, #theoretic
   Ctl2 = 2.00, #theoretic
@@ -17,8 +17,8 @@ efficancies <- list(
   Tc6639 = 2.00, #theoretic
   G8A = 2.04, #theoretic
   E75 = 2.02, #theoretic
-  KU70 = 2.00, #theoretic
-  KU80 = 2.00, #theoretic
+  Ku70 = 2.00, #theoretic
+  Ku80 = 2.00, #theoretic
   Lac2 = 2.00, #theoretic
   EcRA = 1.95, #theoretic
   AGM = 2.00 #theoretic
