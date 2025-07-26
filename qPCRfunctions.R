@@ -109,19 +109,19 @@ plotData <- function(data, expID, add_statistics = FALSE) {
   #bxp <- ggplot(data = data, aes(x = reorder(desc(Sample_Gene), desc(Gene)), y = normCt)) + 
     #geom_boxplot()
     
-  #bxp <- ggplot(data = data, aes(x = Sample, y = normCt)) + geom_boxplot() 
+  #bxp <- ggplot(data = data, aes(x = Sample, y = normCt)) + geom_boxplot(fill = "lightblue") 
   bxp <- ggplot(data = data, aes(x = Gene, y = relExp)) + geom_boxplot() 
   if (add_statistics == TRUE) {
     stat.test <- qPCRstats(data)
     stat.test <- stat.test %>% add_xy_position(x = "Sample_Gene")
     bxp + 
-      stat_pvalue_manual(stat.test, hide.ns = TRUE, label = "p.adj.signif", tip.length = 0, step.increase = 0.1, y.position = 0.0025) +
+      stat_pvalue_manual(stat.test, hide.ns = TRUE, label = "p.adj.signif", tip.length = 0, step.increase = 0.1, y.position = 0.00105) +
       labs(
         title = expID,
         subtitle = get_test_label(res_aov, detailed = TRUE), 
         caption = get_pwc_label(res_posthoc),
         x = "Sample",
-        y = paste0("relative Expression of ", expID, " [normalized /", RefG, "]")
+        y = paste0("mean normalized Expression \n of ", expID, " [normalized /", RefG, "]")
         ) + 
       theme(
         plot.title = element_text(hjust = 0.5, size = 20),
@@ -129,53 +129,56 @@ plotData <- function(data, expID, add_statistics = FALSE) {
         axis.text.y = element_text(size = 20),
         axis.title = element_text(size = 20)
             ) + 
-      ylim(0, 0.0025)
+      theme_minimal() +
+      ylim(0.000375, 0.00105)
   } else {
     bxp + 
       labs(
         title = expID,
         x = "Sample",
-        y = paste0("relative Expression of ", expID, " [normalized /", RefG, "]")
+        y = paste0("mean normalized Expression \n of ", expID, " [normalized /", RefG, "]")
       ) +
       theme(
         plot.title = element_text(hjust = 0.5, size = 20),
         axis.text.x = element_text(size = 20),#angle = 45, size = 20),
         axis.text.y = element_text(size = 20),
         axis.title = element_text(size = 20)
-      )
+      ) +
+      theme_minimal()
   }
 }
 
 qPCRstats <- function(data) {
   #data$normCt <- data$normCt * 100000 ###########################
   #data$relExp <- data$relExp * 100000 ###########################
-  #shapVal <- data %>% shapiro_test(normCt)
-  shapVal <- data %>% shapiro_test(relExp)
+  shapVal <- data %>% shapiro_test(normCt)
+  #shapVal <- data %>% shapiro_test(relExp)
   #shapVal <- c()
   #shapVal$p <- 0.05
-  #levVal <- data %>% levene_test(normCt ~ Sample_Gene)
-  levVal <- data %>% levene_test(relExp ~ Sample_Gene)
-  #if (shapVal$p > 0.05 & levVal$p > 0.05) {
-  #  stat.test <- data %>% anova_test(normCt ~ Sample_Gene)
-  #  posthoc_res <- data %>% pairwise_t_test(normCt ~ Sample_Gene, p.adjust.method = "bonferroni")
-  #} else {
-  #  stat.test <- data %>% kruskal_test(normCt ~ Sample)
-  #  posthoc_res <- data %>% pairwise_t_test(normCt ~ Sample_Gene, p.adjust.method = "bonferroni")
-  #}
+  levVal <- data %>% levene_test(normCt ~ Sample_Gene)
+  #levVal <- data %>% levene_test(relExp ~ Sample_Gene)
   if (shapVal$p > 0.05 & levVal$p > 0.05) {
-    stat.test <- data %>% anova_test(relExp ~ Sample_Gene)
-    posthoc_res <- data %>% pairwise_t_test(relExp ~ Sample_Gene, p.adjust.method = "bonferroni")
+    stat.test <- data %>% anova_test(normCt ~ Sample_Gene)
+    posthoc_res <- data %>% pairwise_t_test(normCt ~ Sample_Gene, p.adjust.method = "bonferroni")
   } else {
-    stat.test <- data %>% kruskal_test(relExp ~ Sample)
-    posthoc_res <- data %>% pairwise_t_test(relExp ~ Sample_Gene, p.adjust.method = "bonferroni")
+    stat.test <- data %>% kruskal_test(normCt ~ Sample)
+    posthoc_res <- data %>% pairwise_t_test(normCt ~ Sample_Gene, p.adjust.method = "bonferroni")
   }
+  #if (shapVal$p > 0.05 & levVal$p > 0.05) {
+  #  stat.test <- data %>% anova_test(relExp ~ Sample_Gene)
+  #  posthoc_res <- data %>% pairwise_t_test(relExp ~ Sample_Gene, p.adjust.method = "bonferroni")
+  #} else {
+  #  stat.test <- data %>% kruskal_test(relExp ~ Sample)
+  #  posthoc_res <- data %>% pairwise_t_test(relExp ~ Sample_Gene, p.adjust.method = "bonferroni")
+  #}
   assign("res_aov", stat.test, envir = .GlobalEnv)
   assign("res_posthoc", posthoc_res, envir = .GlobalEnv)
 }
 
-saveData <- function(dataPool, extractedData, storePath, expID) {
-  write.xlsx(dataPool, paste0(storePath, "/", expID, "_boxplot_Data.xlsx"))
-  if (nrow(extractedData) > 0) {
+saveData <- function(dataPool, extractedData = NA, storePath, expID) {
+  write.xlsx(dataPool, paste0(storePath, "/", expID, "_", expGroup, "_boxplot_Data.xlsx"))
+  
+  if (!is.na(extractedData)) {
     write.xlsx(extractedData, paste0(storePath, "/", expID, "_extractedData.xlsx"))
   }
 }
@@ -203,7 +206,7 @@ load_Data <- function(loadPath) {
     temp$Cq <- gsub(",", ".", temp$Cq)
     temp$Cq <- gsub("-1", NA, temp$Cq)
     temp$Cq <- as.numeric(temp$Cq)
-    temp <- na.omit(temp)
+    #temp <- na.omit(temp)
     if (biol_rep >= 2) {
       temp <- aggregate(temp, list(temp$Sample, temp$Gene), mean)
       temp$Sample <- temp$Group.1
@@ -249,16 +252,17 @@ rel_data_prep <- function(DataTable, RefG, genes, refGroup) {
   for (gene in genes) {
     tempgene <- subset(dataPool, grepl(gene, dataPool$Gene))
     temp <- subset(tempgene, grepl(refGroup, tempgene$Sample))
+    temp <- na.omit(temp)
     temp <- 1 / median(temp$normCt)
     tempgene$relExp <- tempgene$normCt * temp
     #tempstat <- tempgene %>% t_test(relExp ~ Sample)
-    qPCRstats(tempgene)
-    tempstatPoolaov <- rbind(tempstatPoolaov, as.data.frame(res_aov))
+    qPCRstatsrel(tempgene)
+    #tempstatPoolaov <- rbind(tempstatPoolaov, as.data.frame(res_aov))
     tempstatPoolph <- rbind(tempstatPoolph,  as.data.frame(res_posthoc))
     tempPool <- rbind(tempPool, tempgene)
   }
   dataPool <- distinct(tempPool)
-  
+  assign("OA_res_posthoc", tempstatPoolph, envir = .GlobalEnv)
   return(dataPool)
 }
 
@@ -273,9 +277,10 @@ rel_plot <- function(dataPool, bars = "se") {
   
   KDeffsum <- subset(dataPool, grepl(level_list[[1]], dataPool$Gene))
   KDeffsum <- summarySE(data=KDeffsum, measurevar="relExp", groupvars="Sample", na.rm=FALSE, conf.interval=.95)
+  KDeffsum <- subset(KDeffsum, !grepl(refGroup, KDeffsum$Sample))
   
   
-  if(biol_rep >= 2) {
+  if(biol_rep > 1) {
     
     #plotData(dataPoolTest, expGroup)
     ggplot(dataPoolTest, aes(x=Gene, y = relExp*100)) + 
@@ -283,10 +288,11 @@ rel_plot <- function(dataPool, bars = "se") {
       geom_boxplot(fill = "lightblue") +
       theme_minimal() +
       labs(
-        title = expGroup,
+        title = expID,
         x = "Gene",
         y = "relative Expression in %", 
-        caption = paste0("Replicates: N = 3, n = ", biol_rep, "; KD-efficancy of ", expGroup, ": ", round(diff(KDeffsum$relExp) * 100, 2), "% \u00B1 ", round(KDeffsum$sd[1]*100, 2), "%")
+        #caption = paste0("n = 3; efficancy: ", round((100 - (KDeffsum$relExp * 100)), 2), "% \u00B1 ", round(KDeffsum$sd[1]*100, 2), "%")
+        caption = paste0("n = 3; efficancy: ", round(diff(KDeffsum$relExp) * 100, 2), "% \u00B1 ", round(KDeffsum$sd[1]*100, 2), "%")
       ) +
       theme(
         plot.title = element_text(hjust = 0.5, size = 20),
@@ -295,23 +301,24 @@ rel_plot <- function(dataPool, bars = "se") {
         axis.title = element_text(size = 15),
         plot.caption = element_text(face = "italic", size = 15, hjust = 0.5)
       ) #+
-      #ylim(0,230)
-  } else if (biol_rep == 1) {
+      #ylim(0,100)
+  } else if (biol_rep < 2) {
     
     dPbtw <- summarySE(data=dataPoolTest, measurevar="relExp", groupvars="Sample_Gene", na.rm=FALSE, conf.interval=.95)
     dPbtw$Sample_Gene <- gsub(paste0(expGroup, " "), "", dPbtw$Sample_Gene)
+    #dPbtw$Sample_Gene <- genes
     dPbtw$Sample_Gene <- factor(dPbtw$Sample_Gene, levels = level_list)
     
-    ggplot(dPbtw, aes(x=Sample_Gene, y = relExp)) + 
-      geom_hline(aes(yintercept = 1), linetype = "dashed", linewidth = 1.2, colour = "blue")+
-      geom_errorbar(aes(ymin=relExp-get(bars), ymax=relExp+get(bars)),width=.1) +
-      geom_point(size = 2) +
+    ggplot(dPbtw, aes(x=Sample_Gene, y = relExp*100)) + 
+      geom_hline(aes(yintercept = 100), linetype = "dashed", linewidth = 1.2, colour = "blue")+
+      geom_errorbar(aes(ymin=(relExp-get(bars))*100, ymax=(relExp+get(bars))*100),width=.15) +
+      geom_point(size = 5) +
       theme_minimal() +
       labs(
-        title = expGroup,
+        title = expID,
         x = "Gene",
         y = "relative Expression",
-        caption = paste0("Replicates: N = 3, n = ", biol_rep, "; KD-efficancy of ", expGroup, ": ", round(diff(KDeffsum$relExp) * 100, 2), "% \u00B1 ", round(KDeffsum$sd[1]*100, 2), "%")
+        caption = paste0("RNAi efficancy: ", round((100 - (KDeffsum$relExp * 100)), 2), "% \u00B1 ", round(KDeffsum$sd[1]*100, 2), "%")
       ) +
       theme(
         plot.title = element_text(hjust = 0.5, size = 20),
@@ -320,9 +327,10 @@ rel_plot <- function(dataPool, bars = "se") {
         axis.title = element_text(size = 15),
         plot.caption = element_text(face = "italic", size = 10, hjust = 0.5)
       ) #+
-      #ylim(0,200)
+      #ylim(0,100)
     
-  }
+  
+    }
   
   
   
@@ -334,7 +342,32 @@ rel_plot <- function(dataPool, bars = "se") {
 
 
 
-
+qPCRstatsrel <- function(data) {
+  #data$normCt <- data$normCt * 100000 ###########################
+  #data$relExp <- data$relExp * 100000 ###########################
+  #shapVal <- data %>% shapiro_test(normCt)
+  shapVal <- data %>% shapiro_test(relExp)
+  #shapVal <- c()
+  #shapVal$p <- 0.05
+  #levVal <- data %>% levene_test(normCt ~ Sample_Gene)
+  levVal <- data %>% levene_test(relExp ~ Sample_Gene)
+  #if (shapVal$p > 0.05 & levVal$p > 0.05) {
+  #  stat.test <- data %>% anova_test(normCt ~ Sample_Gene)
+  #  posthoc_res <- data %>% pairwise_t_test(normCt ~ Sample_Gene, p.adjust.method = "bonferroni")
+  #} else {
+  #  stat.test <- data %>% kruskal_test(normCt ~ Sample)
+  #  posthoc_res <- data %>% pairwise_t_test(normCt ~ Sample_Gene, p.adjust.method = "bonferroni")
+  #}
+  if (shapVal$p > 0.05 & levVal$p > 0.05) {
+    stat.test <- data %>% anova_test(relExp ~ Sample_Gene)
+    posthoc_res <- data %>% pairwise_t_test(relExp ~ Sample_Gene, p.adjust.method = "bonferroni")
+  } else {
+    stat.test <- data %>% kruskal_test(relExp ~ Sample)
+    posthoc_res <- data %>% pairwise_t_test(relExp ~ Sample_Gene, p.adjust.method = "bonferroni")
+  }
+  assign("res_aov", stat.test, envir = .GlobalEnv)
+  assign("res_posthoc", posthoc_res, envir = .GlobalEnv)
+}
 
 
 

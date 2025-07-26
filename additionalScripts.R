@@ -3,25 +3,32 @@
 
 ##Reference gene stability in tested samples
 
-RefTest <- subset(DataTable, grepl("RpS18", DataTable$Gene))
+RefTest <- subset(DataTable3, grepl("RpS18", DataTable3$Gene))
 
-RefTest$Sample <- factor(RefTest$Sample, levels = c("L1", "L2", "L3", "L4", "L5", "PP", "P0", "P1", "P2", "P3", "P4", "P5", "A"))
+#RefTest$Sample <- factor(RefTest$Sample, levels = c("L1", "L2", "L3", "L4", "L5", "PP", "P0", "P1", "P2", "P3", "P4", "P5", "A"))
 
 
 #1st try -> with mean
 RefTest$Cq <- gsub(",", ".", RefTest$Cq)
 RefTest$Cq <- gsub("-1", NA, RefTest$Cq)
-RefTest <- na.omit(RefTest)
+#RefTest <- na.omit(RefTest)
 RefTest$Cq <- as.numeric(RefTest$Cq)
-RefTest <- aggregate(RefTest, list(RefTest$Sample), mean)
+#RefTest <- aggregate(RefTest, list(RefTest$Sample), mean)
+RefTest <-  summarySE(data=RefTest, measurevar="Cq", groupvars="Sample", na.rm=FALSE, conf.interval=.95)
 #RefTest$SD <- sd(RefTest)
-RefTest$Sample <- 1:nrow(RefTest) #enter values for 
-fm <- lm(RefTest$Cq ~ RefTest$Sample)
-cfm <- coef(fm)
-sfm <- summary(fm)
-r_square <- sfm$adj.r.squared
-ggplot(data = RefTest, aes(x = Group.1, y = Cq)) +
-  geom_point() + ylim(0, 35) #+
+#RefTest$Sample <- 1:nrow(RefTest) #enter values for 
+#fm <- lm(RefTest$Cq ~ RefTest$Sample)
+#cfm <- coef(fm)
+#sfm <- summary(fm)
+#r_square <- sfm$adj.r.squared
+RefTest$Sample <- factor(RefTest$Sample, levels = c("dsVer", "dsTsr"))
+ggplot(data = RefTest, aes(x = Sample, y = Cq)) +
+  geom_errorbar(aes(ymin=(Cq-se), ymax=(Cq+se)),width=.15) +
+  geom_point(size = 2) + ylim(0, 40) +
+  theme_minimal()+
+  labs(
+    x = "Group"
+  )
   geom_abline(intercept = cfm[1], slope = cfm[2], color = "red") + ylim(0, 30)
 
 #2nd try -> without mean

@@ -41,7 +41,9 @@ if (!require("hrbrthemes", character.only = TRUE)) {
 if (!require("ggcorrplot", character.only = TRUE)) {
   install.packages("ggcorrplot")
 }
-if (!requireNamespace("devtools")) install.packages("devtools")
+if (!requireNamespace("devtools",  character.only = TRUE)) {
+  install.packages("devtools")
+}
 devtools::install_github("caijun/ggcorrplot2")
 if (!require("psych", character.only = TRUE)) {
   install.packages("psych")

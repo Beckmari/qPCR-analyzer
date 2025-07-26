@@ -3,15 +3,15 @@ source("qPCRfunctions.R")
 source("dependencies.R")
 
 # enter unique experiment identifier
-expID <- "dsFABPcoreg_rep3"
+expID <- "dsFABP8"
 # enter your reference gene
 RefG <- "RpS18" 
 # enter all your genes w/o reference gene
-genes <- list("SERCA12671") 
+genes <- list( "Dop2R", "Dop1R2", "TH", "CHS1", "Lac2") 
 # enter path to prepared data in *.xlsx file
-loadPath <- "C:/Users/Marius Beck/OneDrive/Desktop/BA_Sequenzen/SERCA/dsSERCA12671/Neuer Ordner/Wachstum Larven/KDVeri_Wachstum.xlsx"
+loadPath <-  "C:/Users/beckm/Desktop/dsFABP8_coreg.xlsx"
 # enter path where data shall be stored
-storePath <- "C:/Users/Marius Beck/OneDrive/Desktop/BA_Sequenzen/SERCA/dsSERCA12671/Neuer Ordner/Wachstum Larven"
+storePath <- "C:/Users/beckm/Desktop/"
 # if you want to show stats, set TRUE
 add_statistics <-F
 
@@ -20,9 +20,9 @@ add_statistics <-F
 efficancies <- list(
   RpS6 = 1.99, #empiric
   RpS18 = 1.93, #empiric
-  FABP15275 = 1.91, #empiric
-  FABP12473 = 2.00, #theoretic
-  FABP1310 = 2.00, #theoretic
+  FABP8 = 1.91, #empiric 15275
+  FABP2 = 2.00, #theoretic 12473
+  FABP4 = 2.00, #theoretic 1310
   CHS1 = 2.00, #empiric
   Reb = 1.95, #empiric
   Osi18 = 2.00, #theoretic
@@ -35,6 +35,10 @@ efficancies <- list(
   E75 = 2.02, #theoretic
   KU70 = 2.00, #theoretic
   KU80 = 2.00, #theoretic
+  Lac2 = 2.00, #theoretic
+  TH = 2.00, #theoretic
+  Dop1R2 = 2.00, #theoretic
+  Dop2R = 2.00, #theoretic
   Lac2 = 2.00, #theoretic
   EcRA = 1.95 #theoretic
 )
@@ -73,16 +77,17 @@ extractedData <- dataPool[!duplicates, ]
 dataPool <- dataPool[duplicates, ]
 dataPool <- distinct(dataPool)
 #dataPool$Sample <- factor(dataPool$Sample, levels = c("L1", "L2", "L3", "L4", "L5", "PP", "P0", "P1", "P2", "P3", "P4", "P5", "A"))
+dataPool$Sample <- factor(dataPool$Sample, levels = c("Elytra P0", "Elytra P1", "Elytra P2", "Elytra P3", "Elytra P4", "Elytra P5"))
 
 # plot data sorted by primer pairs
 
-dataPool$Sample <- factor(dataPool$Sample, levels = c("dsVer", "dsSERCA12671"))
+#dataPool$Sample <- factor(dataPool$Sample, levels = c("dsVer", "dsTsr"))
 for (gene_name in genes) {
   tempPlotData <- subset(dataPool, grepl(gene_name, dataPool$Gene))
   plotData(tempPlotData, gene_name, add_statistics)
   # save plot and data
-  ggsave(paste0(gene_name, "_normalized_boxplot3.png"), path = storePath)
-  ggsave(paste0(gene_name, "_normalized_boxplot3.pdf"), path = storePath)
+  ggsave(paste0(gene_name, "_Elytra.png"), path = storePath)
+  ggsave(paste0(gene_name, "_Elytra.pdf"), path = storePath)
 }
 
 
