@@ -109,8 +109,8 @@ plotData <- function(data, expID, add_statistics = FALSE) {
   #bxp <- ggplot(data = data, aes(x = reorder(desc(Sample_Gene), desc(Gene)), y = normCt)) + 
     #geom_boxplot()
     
-  #bxp <- ggplot(data = data, aes(x = Sample, y = normCt)) + geom_boxplot(fill = "lightblue") 
-  bxp <- ggplot(data = data, aes(x = Gene, y = relExp)) + geom_boxplot() 
+  bxp <- ggplot(data = data, aes(x = Sample, y = normCt)) + geom_boxplot(fill = "lightblue") 
+  #bxp <- ggplot(data = data, aes(x = Gene, y = relExp)) + geom_boxplot() 
   if (add_statistics == TRUE) {
     stat.test <- qPCRstats(data)
     stat.test <- stat.test %>% add_xy_position(x = "Sample_Gene")
@@ -142,10 +142,12 @@ plotData <- function(data, expID, add_statistics = FALSE) {
         plot.title = element_text(hjust = 0.5, size = 20),
         axis.text.x = element_text(size = 20),#angle = 45, size = 20),
         axis.text.y = element_text(size = 20),
-        axis.title = element_text(size = 20)
+        axis.title =  element_text(size = 20)
       ) +
+      ylim(0, 0.16) +
       theme_minimal()
   }
+  return(bxp)
 }
 
 qPCRstats <- function(data) {
@@ -176,7 +178,7 @@ qPCRstats <- function(data) {
 }
 
 saveData <- function(dataPool, extractedData = NA, storePath, expID) {
-  write.xlsx(dataPool, paste0(storePath, "/", expID, "_", expGroup, "_boxplot_Data.xlsx"))
+  write.xlsx(dataPool, paste0(storePath, "/", expID, "_boxplot_Data.xlsx")) # "_", expGroup,
   
   if (!is.na(extractedData)) {
     write.xlsx(extractedData, paste0(storePath, "/", expID, "_extractedData.xlsx"))

@@ -3,15 +3,15 @@ source("qPCRfunctions.R")
 source("dependencies.R")
 
 # enter unique experiment identifier
-expID <- "dsFABP8"
+expID <- "FABP8X3"
 # enter your reference gene
 RefG <- "RpS18" 
 # enter all your genes w/o reference gene
-genes <- list( "Dop2R", "Dop1R2", "TH", "CHS1", "Lac2") 
+genes <- list( "FABP8X3") 
 # enter path to prepared data in *.xlsx file
-loadPath <-  "C:/Users/beckm/Desktop/dsFABP8_coreg.xlsx"
+loadPath <-  "C:/Users/beckm/Desktop/satging/FABP8_X3.xlsx"
 # enter path where data shall be stored
-storePath <- "C:/Users/beckm/Desktop/"
+storePath <- "C:/Users/beckm/Desktop/satging/"
 # if you want to show stats, set TRUE
 add_statistics <-F
 
@@ -20,7 +20,9 @@ add_statistics <-F
 efficancies <- list(
   RpS6 = 1.99, #empiric
   RpS18 = 1.93, #empiric
-  FABP8 = 1.91, #empiric 15275
+  FABP8X3 = 1.91, #empiric 15275
+  FABP8X2 = 1.91, #empiric 15275
+  FABP8X1 = 1.91, #empiric 15275
   FABP2 = 2.00, #theoretic 12473
   FABP4 = 2.00, #theoretic 1310
   CHS1 = 2.00, #empiric
@@ -77,7 +79,7 @@ extractedData <- dataPool[!duplicates, ]
 dataPool <- dataPool[duplicates, ]
 dataPool <- distinct(dataPool)
 #dataPool$Sample <- factor(dataPool$Sample, levels = c("L1", "L2", "L3", "L4", "L5", "PP", "P0", "P1", "P2", "P3", "P4", "P5", "A"))
-dataPool$Sample <- factor(dataPool$Sample, levels = c("Elytra P0", "Elytra P1", "Elytra P2", "Elytra P3", "Elytra P4", "Elytra P5"))
+dataPool$Sample <- factor(dataPool$Sample, levels = c("Elyt P0", "Elyt P1", "Elyt P2", "Elyt P3", "Elyt P4", "Elyt P5"))
 
 # plot data sorted by primer pairs
 
@@ -86,23 +88,23 @@ for (gene_name in genes) {
   tempPlotData <- subset(dataPool, grepl(gene_name, dataPool$Gene))
   plotData(tempPlotData, gene_name, add_statistics)
   # save plot and data
-  ggsave(paste0(gene_name, "_Elytra.png"), path = storePath)
-  ggsave(paste0(gene_name, "_Elytra.pdf"), path = storePath)
+  ggsave(paste0(gene_name, "_Elyt.png"), path = storePath)
+  ggsave(paste0(gene_name, "_Elyt.pdf"), path = storePath)
 }
 
 
 # plot data sorted by RNAi
-rnai <- unique(dataPool$Sample)
-rnai <- subset(rnai, !grepl("dsVer", rnai))
-ctrlKD <- subset(dataPool, grepl("dsVer", dataPool$Gene))
-for (kd in rnai) {
-  tempPlotData <- subset(dataPool, grepl(kd, dataPool$Sample))
-  #tempPlotData <- rbind(tempPlotData, ctrlKD)
-  plotData(tempPlotData, kd, add_statistics)
-  # save plot and data
-  ggsave(paste0(kd, "_normalized_boxplot1.tiff"), path = storePath)
-  ggsave(paste0(kd, "_normalized_boxplot1.pdf"), path = storePath)
-}
+#rnai <- unique(dataPool$Sample)
+#rnai <- subset(rnai, !grepl("dsVer", rnai))
+#ctrlKD <- subset(dataPool, grepl("dsVer", dataPool$Gene))
+#for (kd in rnai) {
+#  tempPlotData <- subset(dataPool, grepl(kd, dataPool$Sample))
+#  #tempPlotData <- rbind(tempPlotData, ctrlKD)
+#  plotData(tempPlotData, kd, add_statistics)
+#  # save plot and data
+#  ggsave(paste0(kd, "_normalized_boxplot1.tiff"), path = storePath)
+#  ggsave(paste0(kd, "_normalized_boxplot1.pdf"), path = storePath)
+#}
 
 # save data
 saveData(dataPool, extractedData, storePath, expID)
