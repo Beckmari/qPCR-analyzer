@@ -3,17 +3,19 @@ source("qPCRfunctions.R")
 source("dependencies.R")
 
 # enter unique experiment identifier
-expID <- "FABP8X3"
+expID <- "Cht8"
 # enter your reference gene
-RefG <- "RpS18" 
+RefG <- "RpS6" 
 # enter all your genes w/o reference gene
-genes <- list( "FABP8X3") 
+genes <- list( "Cht8") 
 # enter path to prepared data in *.xlsx file
-loadPath <-  "C:/Users/beckm/Desktop/satging/FABP8_X3.xlsx"
+loadPath <-  "E:/Chan/Mappe2.xlsx"
 # enter path where data shall be stored
-storePath <- "C:/Users/beckm/Desktop/satging/"
+storePath <- "E:/Chan/"
 # if you want to show stats, set TRUE
 add_statistics <-F
+level_list <- c("L1mg", "L2mg", "Pre Pupae", "early Pupae", "late Pupae", "Adult")
+
 
 # enter your empirical primerefficancies in the following list separated by comma
 # if you don't know your empirical primerefficancies enter a theoretical value of 2
@@ -42,6 +44,9 @@ efficancies <- list(
   Dop1R2 = 2.00, #theoretic
   Dop2R = 2.00, #theoretic
   Lac2 = 2.00, #theoretic
+  Cht4 = 2.00, #theoretic
+  Cht8 = 2.00, #theoretic
+  Cht9 = 2.00, #theoretic
   EcRA = 1.95 #theoretic
 )
 
@@ -79,7 +84,7 @@ extractedData <- dataPool[!duplicates, ]
 dataPool <- dataPool[duplicates, ]
 dataPool <- distinct(dataPool)
 #dataPool$Sample <- factor(dataPool$Sample, levels = c("L1", "L2", "L3", "L4", "L5", "PP", "P0", "P1", "P2", "P3", "P4", "P5", "A"))
-dataPool$Sample <- factor(dataPool$Sample, levels = c("Elyt P0", "Elyt P1", "Elyt P2", "Elyt P3", "Elyt P4", "Elyt P5"))
+dataPool$Sample <- factor(dataPool$Sample, levels = level_list)
 
 # plot data sorted by primer pairs
 
@@ -88,8 +93,8 @@ for (gene_name in genes) {
   tempPlotData <- subset(dataPool, grepl(gene_name, dataPool$Gene))
   plotData(tempPlotData, gene_name, add_statistics)
   # save plot and data
-  ggsave(paste0(gene_name, "_Elyt.png"), path = storePath)
-  ggsave(paste0(gene_name, "_Elyt.pdf"), path = storePath)
+  ggsave(paste0(gene_name, "_plot.png"), path = storePath)
+  ggsave(paste0(gene_name, "_plot.pdf"), path = storePath)
 }
 
 

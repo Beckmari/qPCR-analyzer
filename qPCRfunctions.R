@@ -144,7 +144,7 @@ plotData <- function(data, expID, add_statistics = FALSE) {
         axis.text.y = element_text(size = 20),
         axis.title =  element_text(size = 20)
       ) +
-      ylim(0, 0.16) +
+      ylim(0, 0.3) +
       theme_minimal()
   }
   return(bxp)
